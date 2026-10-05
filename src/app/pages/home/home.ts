@@ -3,6 +3,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { JsonPipe } from '@angular/common';
 import { ShiftApi } from '../../core/shifts/shift-api';
 import { Shift } from '../../core/shifts/shift.model';
+import { addDays, startOfWeek, toIsoDate } from '../../core/shifts/week';
 
 /** Tela provisória: só confirma que o login funcionou. Vira a semana na Etapa 4. */
 @Component({
@@ -23,8 +24,9 @@ export class Home {
   protected readonly shifts = signal<Shift[]>([]);
 
   constructor() {
+    const saturdayDate = startOfWeek(new Date());    
     this.shiftApi
-      .list(this.auth.employeeId()!, '2026-09-01', '2026-09-30')
+      .list(this.auth.employeeId()!, toIsoDate(saturdayDate), toIsoDate(addDays(saturdayDate, 6)))
       .subscribe((page) => this.shifts.set(page.content));
   }
 }
