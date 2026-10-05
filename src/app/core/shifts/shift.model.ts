@@ -8,6 +8,11 @@ export interface Shift {
     status: 'SCHEDULED' | 'COMPLETED' | 'CANCELED';
 }
 
+export interface WeekDay {
+    date: string,
+    shifts: Shift[]
+}
+
 export interface Page<T> {
     content: T[];
     page: number;
