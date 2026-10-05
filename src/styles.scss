@@ -1,1 +1,51 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  /* superfícies */
+  --bg: #0f172a;             /* fundo da página (slate/900) */
+  --bg-rail: #070e1e;        /* barra lateral e menu */
+  --surface: #1e293b;        /* cartões e janelas (slate/800) */
+  --surface-raised: #334155; /* hover e detalhes (slate/700) */
+  --border: #334155;
+
+  /* texto */
+  --text: #e2e8f0;           /* principal (slate/200) */
+  --text-muted: #94a3b8;     /* secundário (slate/400) */
+
+  /* ações */
+  --accent: #38bdf8;         /* botão principal e dia atual */
+  --accent-text: #0f172a;    /* texto sobre o accent */
+  --danger: #ef4444;
+
+  /* forma e espaçamento */
+  --radius: 8px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 20px;
+  --space-5: 24px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
