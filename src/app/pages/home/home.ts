@@ -12,6 +12,8 @@ import { addDays, startOfWeek, toIsoDate } from '../../core/shifts/week';
   template: `
     <main style="padding: 24px">
       <h1>My shifts</h1>
+       <button type="button" (click)="changeWeek(-1)">&lt;</button>
+       <button type="button" (click)="changeWeek(1)">&gt;</button>
       @for (item of days(); track item.date) {
         <section>
           <h2>{{item.date}}</h2>
@@ -32,7 +34,7 @@ export class Home {
 
   protected readonly shifts = signal<Shift[]>([]);
 
-  protected readonly weekStart = signal<Date>(startOfWeek(new Date(2026, 8, 5)));
+  protected readonly weekStart = signal<Date>(startOfWeek(new Date()));
 
   protected readonly days = computed<WeekDay[]>(() => {
     const start = this.weekStart();
@@ -43,9 +45,18 @@ export class Home {
     });
   });
 
-  constructor() {
+  private loadShifts() {
     this.shiftApi
       .list(this.auth.employeeId()!, toIsoDate(this.weekStart()), toIsoDate(addDays(this.weekStart(), 6)))
       .subscribe((page) => this.shifts.set(page.content));
+  }
+
+  private changeWeek(offset: number) {
+    this.weekStart.update(d => addDays(d, offset * 7));
+    this.loadShifts();
+  }
+
+  constructor() {
+    this.loadShifts();
   }
 }
