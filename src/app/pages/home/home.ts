@@ -17,10 +17,15 @@ import { addDays, startOfWeek, toIsoDate } from '../../core/shifts/week';
       <button type="button" (click)="changeWeek(1)">&gt;</button>
       <div class="days">
         @for (item of days(); track item.date) {
-          <section class="day">
+          <section class="day" [class.today]="item.date === today">
             <h2 class="day-title">{{item.date | date: 'EEEE, d MMM'}}</h2>
             @for (shift of item.shifts; track shift.id) {
-              <p class="shift">{{shift.startTime.slice(0, 5)}} to {{shift.endTime.slice(0, 5)}} - {{shift.store.name}}</p>
+                <p class="shift">
+                  @if (shift.status === 'CANCELED') {CANCELED: }
+                  <span [class.canceled]="shift.status === 'CANCELED'">
+                    {{shift.startTime.slice(0, 5)}} to {{shift.endTime.slice(0, 5)}} - {{shift.store.name}}
+                  </span>
+              </p>
             } @empty {
               <p class="day-off">Day Off</p>
             }
@@ -40,6 +45,7 @@ export class Home {
   protected readonly weekStart = signal<Date>(startOfWeek(new Date()));
 
   private readonly weekEnd = computed(() => addDays(this.weekStart(), 6));
+  protected readonly today = toIsoDate(new Date());
 
   protected readonly days = computed<WeekDay[]>(() => {
     const start = this.weekStart();

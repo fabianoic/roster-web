@@ -12,6 +12,7 @@
     border-radius: var(--radius);
     padding: var(--space-4);
     background: var(--surface);
+    boreder: 2px solid transparent;
 }
 
 .day-title {
@@ -26,4 +27,16 @@
 .week-title {
     font-size: 1.75rem;
     color: var(--text);
+}
+
+.day.today {
+    border: 2px solid var(--accent);
+    .day-title {
+        color: var(--accent);
+    }
+}
+
+.shift .canceled {
+    text-decoration: line-through;
+    opacity: 0.5;
 }
