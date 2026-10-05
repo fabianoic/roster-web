@@ -9,22 +9,24 @@ import { addDays, startOfWeek, toIsoDate } from '../../core/shifts/week';
 @Component({
   selector: 'app-home',
   imports: [DatePipe],
+  styleUrl: './home.scss',
   template: `
-    <main style="padding: 24px">
-      <h1>My shifts</h1>
-      <h2>Week {{ weekStart() | date: 'd' }} to {{ weekEnd() | date: 'd' }} of {{ weekStart() | date: 'MMMM' }}</h2>
+    <main class="page">
+      <h1 class="week-title">Week {{ weekStart() | date: 'd' }} to {{ weekEnd() | date: 'd' }} of {{ weekStart() | date: 'MMMM' }}</h1>
       <button type="button" (click)="changeWeek(-1)">&lt;</button>
       <button type="button" (click)="changeWeek(1)">&gt;</button>
-      @for (item of days(); track item.date) {
-        <section>
-          <h2>{{item.date | date: 'EEEE, d MMM'}}</h2>
-          @for (shift of item.shifts; track shift.id) {
-            <p>{{shift.startTime.slice(0, 5)}} to {{shift.endTime.slice(0, 5)}} - {{shift.store.name}}</p>
-          } @empty {
-            <p>Day Off</p>
-          }
-        </section>
-      }
+      <div class="days">
+        @for (item of days(); track item.date) {
+          <section class="day">
+            <h2 class="day-title">{{item.date | date: 'EEEE, d MMM'}}</h2>
+            @for (shift of item.shifts; track shift.id) {
+              <p class="shift">{{shift.startTime.slice(0, 5)}} to {{shift.endTime.slice(0, 5)}} - {{shift.store.name}}</p>
+            } @empty {
+              <p class="day-off">Day Off</p>
+            }
+          </section>
+        }
+      </div>
       <button type="button" (click)="auth.logout()">Sign out</button>
     </main>
   `,
