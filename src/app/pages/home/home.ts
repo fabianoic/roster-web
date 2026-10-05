@@ -32,7 +32,6 @@ import { addDays, startOfWeek, toIsoDate } from '../../core/shifts/week';
           </section>
         }
       </div>
-      <button type="button" (click)="auth.logout()">Sign out</button>
     </main>
   `,
 })

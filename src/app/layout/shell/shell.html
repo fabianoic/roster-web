@@ -1,0 +1,11 @@
+<aside class="sidebar">
+    <nav>
+        <a routerLink="/" routerLinkActive="active"
+            [routerLinkActiveOptions]="{  exact: true }">Home</a>
+    </nav>
+    <button type="button" (click)="auth.logout()">Sign out</button>
+</aside>
+
+<main class="content">
+    <router-outlet />
+</main>
