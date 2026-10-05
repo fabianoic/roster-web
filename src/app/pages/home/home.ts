@@ -8,11 +8,20 @@ import { addDays, startOfWeek, toIsoDate } from '../../core/shifts/week';
 /** Tela provisória: só confirma que o login funcionou. Vira a semana na Etapa 4. */
 @Component({
   selector: 'app-home',
-  imports: [JsonPipe],
+  imports: [],
   template: `
     <main style="padding: 24px">
       <h1>My shifts</h1>
-      <pre>{{ days() | json }}</pre>
+      @for (item of days(); track item.date) {
+        <section>
+          <h2>{{item.date}}</h2>
+          @for (shift of item.shifts; track shift.id) {
+            <p>{{shift.startTime.slice(0, 5)}} to {{shift.endTime.slice(0, 5)}} - {{shift.store.name}}</p>
+          } @empty {
+            <p>Day Off</p>
+          }
+        </section>
+      }
       <button type="button" (click)="auth.logout()">Sign out</button>
     </main>
   `,
