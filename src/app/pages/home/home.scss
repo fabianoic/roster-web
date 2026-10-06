@@ -14,18 +14,28 @@
     background: var(--surface);
     border: 2px solid transparent;
     min-width: 0;
+    width: 100%;
+    text-align: left;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
 }
 
 .day-title {
     color: var(--text);
     margin: 0 0 var(--space-2);
     font-size: 1rem;
+    display: block;
 }
 
 .shift, .day-off {
     color: var(--text-muted);
     font-size: 0.875rem;
     overflow-wrap: anywhere;
+    display: block;
 }
 
 .week-title {
@@ -49,4 +59,21 @@
     .days {
         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     }
+}
+
+dialog {
+    background: var(--surface);
+    color: var(--text);
+    border-radius: var(--radius);
+    min-width: 320px;
+    border: none;
+    padding: var(--space-4);
+}
+
+dialog::backdrop {
+    background: rgb(0 0 0 / 0.6);
+}
+
+dialog button {
+    height: 32px;
 }

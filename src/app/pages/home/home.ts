@@ -1,11 +1,10 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { AuthService } from '../../core/auth/auth.service';
 import { DatePipe } from '@angular/common';
 import { ShiftApi } from '../../core/shifts/shift-api';
 import { Shift, WeekDay } from '../../core/shifts/shift.model';
 import { addDays, startOfWeek, toIsoDate } from '../../core/shifts/week';
 
-/** Tela provisória: só confirma que o login funcionou. Vira a semana na Etapa 4. */
 @Component({
   selector: 'app-home',
   imports: [DatePipe],
@@ -17,31 +16,52 @@ import { addDays, startOfWeek, toIsoDate } from '../../core/shifts/week';
       <button type="button" (click)="changeWeek(1)">&gt;</button>
       <div class="days">
         @for (item of days(); track item.date) {
-          <section class="day" [class.today]="item.date === today">
-            <h2 class="day-title">{{item.date | date: 'EEEE, d MMM'}}</h2>
+          <button type="button" class="day" [class.today]="item.date === today" (click)="openDay(item)">
+            <span class="day-title">{{item.date | date: 'EEEE, d MMM'}}</span>
             @for (shift of item.shifts; track shift.id) {
+                <span class="shift">
+                  @if (shift.status === 'CANCELED') {CANCELED: }
+                  <span [class.canceled]="shift.status === 'CANCELED'">
+                    {{shift.startTime.slice(0, 5)}} to {{shift.endTime.slice(0, 5)}} - {{shift.store.name}}
+                  </span>
+            </span>
+            } @empty {
+              <p class="day-off">Day Off</p>
+            }
+          </button>
+        }
+      </div>
+      <dialog #dayDialog (close)="selectedDay.set(null)">
+          @if (selectedDay(); as day) {
+            <h2 class="day-title">{{day.date | date: 'EEEE, d MMM'}}</h2>
+            @for (shift of day.shifts; track shift.id) {
                 <p class="shift">
                   @if (shift.status === 'CANCELED') {CANCELED: }
                   <span [class.canceled]="shift.status === 'CANCELED'">
                     {{shift.startTime.slice(0, 5)}} to {{shift.endTime.slice(0, 5)}} - {{shift.store.name}}
                   </span>
+                  @if (shift.status === 'SCHEDULED' && auth.can('SWAP_REQUEST_SELF')) {
+                    <button type="button">Swap</button>
+                  }
               </p>
             } @empty {
               <p class="day-off">Day Off</p>
             }
-          </section>
-        }
-      </div>
+              <button type="button" (click)="dayDialog.close()">Close</button>
+          }  
+        </dialog>
     </main>
   `,
 })
 export class Home {
   protected readonly auth = inject(AuthService);
   private readonly shiftApi = inject(ShiftApi);
-
+  private readonly dayDialog = viewChild.required<ElementRef<HTMLDialogElement>>('dayDialog');
   protected readonly shifts = signal<Shift[]>([]);
 
   protected readonly weekStart = signal<Date>(startOfWeek(new Date()));
+
+  protected readonly selectedDay = signal<WeekDay | null>(null);
 
   private readonly weekEnd = computed(() => addDays(this.weekStart(), 6));
   protected readonly today = toIsoDate(new Date());
@@ -55,15 +75,20 @@ export class Home {
     });
   });
 
-  private loadShifts() {
+  protected loadShifts() {
     this.shiftApi
       .list(this.auth.employeeId()!, toIsoDate(this.weekStart()), toIsoDate(this.weekEnd()))
       .subscribe((page) => this.shifts.set(page.content));
   }
 
-  private changeWeek(offset: number) {
+  protected changeWeek(offset: number) {
     this.weekStart.update(d => addDays(d, offset * 7));
     this.loadShifts();
+  }
+
+  protected openDay(day: WeekDay) {
+    this.selectedDay.set(day);
+    this.dayDialog().nativeElement.showModal();
   }
 
   constructor() {
