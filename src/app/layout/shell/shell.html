@@ -1,7 +1,9 @@
 <aside class="sidebar">
     <nav>
-        <a routerLink="/" routerLinkActive="active"
-            [routerLinkActiveOptions]="{  exact: true }">Home</a>
+        @for (item of visibleItems(); track item.path) {
+            <a [routerLink]="item.path" routerLinkActive="active"
+            [routerLinkActiveOptions]="{  exact: true }">{{ item.label }}</a>
+        }
     </nav>
     <button type="button" (click)="auth.logout()">Sign out</button>
 </aside>
