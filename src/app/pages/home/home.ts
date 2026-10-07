@@ -4,6 +4,8 @@ import { DatePipe } from '@angular/common';
 import { ShiftApi } from '../../core/shifts/shift-api';
 import { Shift, WeekDay } from '../../core/shifts/shift.model';
 import { addDays, startOfWeek, toIsoDate } from '../../core/shifts/week';
+import { CreateSwapRequest } from '../../core/swaps/swap.model';
+import { SwapApi } from '../../core/swaps/swap-api';
 
 @Component({
   selector: 'app-home',
@@ -41,7 +43,7 @@ import { addDays, startOfWeek, toIsoDate } from '../../core/shifts/week';
                     {{shift.startTime.slice(0, 5)}} to {{shift.endTime.slice(0, 5)}} - {{shift.store.name}}
                   </span>
                   @if (shift.status === 'SCHEDULED' && auth.can('SWAP_REQUEST_SELF')) {
-                    <button type="button">Swap</button>
+                    <button type="button" (click)="swapHandle(shift)">Swap</button>
                   }
               </p>
             } @empty {
@@ -56,6 +58,7 @@ import { addDays, startOfWeek, toIsoDate } from '../../core/shifts/week';
 export class Home {
   protected readonly auth = inject(AuthService);
   private readonly shiftApi = inject(ShiftApi);
+  private readonly SwapApi = inject(SwapApi);
   private readonly dayDialog = viewChild.required<ElementRef<HTMLDialogElement>>('dayDialog');
   protected readonly shifts = signal<Shift[]>([]);
 
@@ -89,6 +92,16 @@ export class Home {
   protected openDay(day: WeekDay) {
     this.selectedDay.set(day);
     this.dayDialog().nativeElement.showModal();
+  }
+
+  protected swapHandle(shift: Shift) {
+    const body: CreateSwapRequest = {
+      requesterId: this.auth.employeeId()!,
+      //temporary target
+      targetId: '694fcdda-827b-4be9-945a-ff424adeb214'
+    }
+    this.SwapApi.create(shift.id, body)
+    .subscribe(r => console.log(r));
   }
 
   constructor() {
