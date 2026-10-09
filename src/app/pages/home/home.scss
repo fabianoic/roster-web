@@ -44,7 +44,7 @@
 }
 
 .day.today {
-    border: 2px solid var(--accent);
+    border-color: var(--accent);
     .day-title {
         color: var(--accent);
     }
