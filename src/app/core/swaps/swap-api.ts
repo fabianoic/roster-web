@@ -1,7 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 import { Observable } from 'rxjs';
-import { CreateSwapRequest, EmployeeSummary, ShiftSwap } from './swap.model';
+import { CreateSwapRequest, ShiftSwap } from './swap.model';
+import { EmployeeSummary } from '../common/common.model';
 
 @Service()
 export class SwapApi {

@@ -13,7 +13,7 @@ export const NAV_ITEMS: NavItem[] = [
     {
         label: 'Schedules',
         path: '/schedules',
-        anyOf: ['SHIFT_WRITE']
+        anyOf: ['SHIFT_READ']
     },
     {
         label: 'Team',

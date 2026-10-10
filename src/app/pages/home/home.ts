@@ -2,11 +2,12 @@ import { Component, computed, ElementRef, inject, signal, viewChild } from '@ang
 import { AuthService } from '../../core/auth/auth.service';
 import { DatePipe } from '@angular/common';
 import { ShiftApi } from '../../core/shifts/shift-api';
-import { Shift, WeekDay } from '../../core/shifts/shift.model';
+import { Shift, ShiftFilter, WeekDay } from '../../core/shifts/shift.model';
 import { addDays, startOfWeek, toIsoDate } from '../../core/shifts/week';
-import { CreateSwapRequest, EmployeeSummary } from '../../core/swaps/swap.model';
+import { CreateSwapRequest } from '../../core/swaps/swap.model';
 import { SwapApi } from '../../core/swaps/swap-api';
 import { HttpErrorResponse } from '@angular/common/http';
+import { EmployeeSummary } from '../../core/common/common.model';
 
 @Component({
   selector: 'app-home',
@@ -85,7 +86,7 @@ export class Home {
   protected readonly swapShift = signal<Shift | null>(null);
   protected readonly candidates = signal<EmployeeSummary[]>([]);
   protected readonly targetId = signal<string | null>(null);
-  protected readonly swapMessage = signal<string | null>("");
+  protected readonly swapMessage = signal<string | null>(null);
 
 
   private readonly dayDialog = viewChild.required<ElementRef<HTMLDialogElement>>('dayDialog');
@@ -103,7 +104,11 @@ export class Home {
 
   protected loadShifts() {
     this.shiftApi
-      .list(this.auth.employeeId()!, toIsoDate(this.weekStart()), toIsoDate(this.weekEnd()))
+      .list({
+        start: toIsoDate(this.weekStart()),
+        end: toIsoDate(this.weekEnd()),
+        employeeId: this.auth.employeeId()!
+      })
       .subscribe((page) => this.shifts.set(page.content));
   }
 

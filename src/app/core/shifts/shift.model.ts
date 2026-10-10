@@ -1,6 +1,8 @@
+import { EmployeeSummary } from "../common/common.model";
+
 export interface Shift {
     id: string;
-    employee: { id: string; name: string };
+    employee: EmployeeSummary;
     store: { id: string; name: string };
     shiftDate: string;
     startTime: string;
@@ -19,4 +21,11 @@ export interface Page<T> {
     size: number;
     totalElements: number;
     totalPages: number;
+}
+
+export interface ShiftFilter {
+    start: string;
+    end: string;
+    employeeId?: string;
+    size?: number;
 }

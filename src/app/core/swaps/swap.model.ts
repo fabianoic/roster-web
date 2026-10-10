@@ -1,3 +1,4 @@
+import { EmployeeSummary } from "../common/common.model";
 import { Shift } from "../shifts/shift.model";
 
 export interface CreateSwapRequest {
@@ -11,10 +12,5 @@ export interface ShiftSwap {
     requester: EmployeeSummary;
     target: EmployeeSummary;
     status: 'PENDING' | 'APPROVED' | 'REJECTED';
-}
-
-export interface EmployeeSummary {
-    id: string;
-    name: string;
 }
 
