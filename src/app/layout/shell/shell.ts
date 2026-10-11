@@ -11,5 +11,5 @@ import { NAV_ITEMS } from '../nav-items';
 })
 export class Shell {
   protected readonly auth = inject(AuthService);
-  protected readonly visibleItems = computed(() => NAV_ITEMS.filter(item => item.anyOf.some(p => this.auth.can(p))));
+  protected readonly visibleItems = computed(() => NAV_ITEMS.filter(item => item.anyOf.some(p => this.auth.canAny(p))));
 }

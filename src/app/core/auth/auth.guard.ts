@@ -14,6 +14,6 @@ export function permissionGuard(...permissions: string[]): CanActivateFn {
   return () => {
     const auth = inject(AuthService);
     const router = inject(Router);
-    return auth.can(...permissions) ? true : router.createUrlTree(['/']);
+    return auth.canAny(...permissions) ? true : router.createUrlTree(['/']);
   };
 }

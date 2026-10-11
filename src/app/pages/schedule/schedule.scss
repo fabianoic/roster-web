@@ -97,3 +97,9 @@ dialog button {
     border-left: 2px solid var(--accent);
     padding-left: var(--space-2);
 }
+
+.shift-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}

@@ -58,7 +58,7 @@ import { CreateSwapRequest } from '../../core/swaps/swap.model';
                 {{ shift.startTime.slice(0, 5) }} to {{ shift.endTime.slice(0, 5) }} -
                 {{ shift.store.name }}
               </span>
-              @if (shift.status === 'SCHEDULED' && auth.can('SWAP_REQUEST_SELF')) {
+              @if (shift.status === 'SCHEDULED' && auth.canAny('SWAP_REQUEST_SELF')) {
                 <button type="button" (click)="swapHandle(shift)">Swap</button>
               }
             </p>

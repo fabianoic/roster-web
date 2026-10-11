@@ -34,10 +34,16 @@ export class AuthService {
   readonly role = computed(() => this.claims()?.role ?? null);
   readonly permissions = computed(() => this.claims()?.permissions ?? []);
 
-  /** Verdadeiro se o usuário tem pelo menos uma das permissões informadas. */
-  can(...permissions: string[]): boolean {
+  /** True if the user has at least one of the given permissions. */
+  canAny(...permissions: string[]): boolean {
     const granted = this.permissions();
     return permissions.some((permission) => granted.includes(permission));
+  }
+
+  /** True if the user has all of the given permissions. */
+  canAll(...permissions: string[]): boolean {
+    const granted = this.permissions();
+    return permissions.every((permission) => granted.includes(permission));
   }
 
   login(email: string, password: string): Observable<LoginResponse> {

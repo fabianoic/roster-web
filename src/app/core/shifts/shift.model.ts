@@ -10,17 +10,17 @@ export interface Shift {
     status: 'SCHEDULED' | 'COMPLETED' | 'CANCELED';
 }
 
+export interface ShiftRequest {
+    employeeId: string;
+    storeId: string;
+    shiftDate: string;
+    startTime: string;
+    endTime: string;
+}
+
 export interface WeekDay {
     date: string;
     shifts: Shift[];
-}
-
-export interface Page<T> {
-    content: T[];
-    page: number;
-    size: number;
-    totalElements: number;
-    totalPages: number;
 }
 
 export interface ShiftFilter {
