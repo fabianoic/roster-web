@@ -11,8 +11,8 @@ export interface Shift {
 }
 
 export interface WeekDay {
-    date: string,
-    shifts: Shift[]
+    date: string;
+    shifts: Shift[];
 }
 
 export interface Page<T> {
@@ -28,4 +28,14 @@ export interface ShiftFilter {
     end: string;
     employeeId?: string;
     size?: number;
+}
+
+export interface EmployeeShifts {
+    employee: EmployeeSummary;
+    shifts: Shift[];
+}
+
+export interface WeekTeamDay {
+    date: string;
+    employees: EmployeeShifts[];
 }
