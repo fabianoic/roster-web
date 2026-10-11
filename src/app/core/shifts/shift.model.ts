@@ -39,3 +39,10 @@ export interface WeekTeamDay {
     date: string;
     employees: EmployeeShifts[];
 }
+
+export interface UpdateShiftRequest {
+    storeId: string;
+    startTime: string;
+    endTime: string;
+    status: Shift['status']
+}
