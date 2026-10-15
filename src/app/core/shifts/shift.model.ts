@@ -46,3 +46,7 @@ export interface UpdateShiftRequest {
     endTime: string;
     status: Shift['status']
 }
+
+export interface UpdateShiftEmployeeRequest {
+    employeeId: string;
+}

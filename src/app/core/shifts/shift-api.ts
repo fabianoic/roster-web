@@ -1,6 +1,12 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
-import { Shift, ShiftFilter, ShiftRequest, UpdateShiftRequest } from './shift.model';
+import {
+  Shift,
+  ShiftFilter,
+  ShiftRequest,
+  UpdateShiftEmployeeRequest,
+  UpdateShiftRequest,
+} from './shift.model';
 import { Observable } from 'rxjs';
 import { Page } from '../common/common.model';
 
@@ -26,5 +32,12 @@ export class ShiftApi {
 
   update(shiftId: string, updateShiftRequest: UpdateShiftRequest): Observable<Shift> {
     return this.http.put<Shift>(`/api/shifts/${shiftId}`, updateShiftRequest);
+  }
+
+  updateShiftEmployee(
+    shiftId: string,
+    updateShiftEmployee: UpdateShiftEmployeeRequest,
+  ): Observable<Shift> {
+    return this.http.patch<Shift>(`/api/shifts/${shiftId}/employee`, updateShiftEmployee);
   }
 }

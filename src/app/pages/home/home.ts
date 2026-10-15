@@ -29,7 +29,7 @@ import { CreateSwapRequest } from '../../core/swaps/swap.model';
             [class.today]="item.date === today"
             (click)="openDay(item)"
           >
-            <span class="day-title">{{ item.date | date: 'EEEE, d MMM' }}</span>
+            <span class="day-title">{{ item.date | date: 'EEE, d MMM' }}</span>
             @for (shift of item.shifts; track shift.id) {
               <span class="shift">
                 @if (shift.status === 'CANCELED') {

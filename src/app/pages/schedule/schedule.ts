@@ -6,12 +6,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { EmployeeSummary } from '../../core/common/common.model';
 import { EmployeeApi } from '../../core/employees/employee-api';
 import { ShiftApi } from '../../core/shifts/shift-api';
-import {
-  Shift,
-  ShiftRequest,
-  UpdateShiftRequest,
-  WeekTeamDay,
-} from '../../core/shifts/shift.model';
+import { Shift, WeekTeamDay } from '../../core/shifts/shift.model';
 import {
   addDays,
   createWeekDays,
@@ -85,7 +80,12 @@ import { StoreSummary } from '../../core/stores/store.model';
                 </span>
 
                 @if (shift.status === 'SCHEDULED' && canCreateAndEditShift()) {
-                  <button type="button" (click)="editHandle(shift)">Edit</button>
+                  <button type="button" (click)="editShiftHandle(shift)">Edit</button>
+                }
+                @if (shift.status !== 'CANCELED' && canCreateAndEditShift()) {
+                  <button type="button" (click)="changeEmployeeHandle(shift)">
+                    Change Employee
+                  </button>
                 }
               </p>
             }
@@ -95,7 +95,6 @@ import { StoreSummary } from '../../core/stores/store.model';
           <button type="button" (click)="dayDialog.close()">Close</button>
         }
       </dialog>
-
       <dialog #formDialog (close)="closeForm()">
         <form class="shift-form" [formGroup]="shiftForm" (ngSubmit)="saveShift()">
           <label>
@@ -103,7 +102,9 @@ import { StoreSummary } from '../../core/stores/store.model';
             <select formControlName="employeeId">
               <option value="" disabled selected>Choose an employee</option>
               @for (employee of employees(); track employee.id) {
-                <option [value]="employee.id">{{ employee.name }}</option>
+                <option [value]="employee.id">
+                  {{ employee.name }}
+                </option>
               }
             </select>
           </label>
@@ -159,6 +160,37 @@ import { StoreSummary } from '../../core/stores/store.model';
           <button type="button" (click)="formDialog.close()">Cancel</button>
         </form>
       </dialog>
+
+      <dialog #employeeDialog (close)="closeEmployeeDialog()">
+        @if (editingEmployeeShift(); as shift) {
+          <h2>Changing Employee:</h2>
+          <span>
+            {{ shift.shiftDate | date: 'EEE, d MMM' }}, {{ shift.startTime.slice(0, 5) }} to
+            {{ shift.endTime.slice(0, 5) }}, Store: {{ shift.store.name }} - Current Employee:
+            {{ shift.employee.name }}
+          </span>
+          <form class="employee-form" [formGroup]="employeeForm" (ngSubmit)="saveReassign()">
+            <label>
+              Choose an employee:
+              <select formControlName="employeeId">
+                <option value="" disabled selected>Choose an employee</option>
+                @for (employee of employees(); track employee.id) {
+                  <option [value]="employee.id" [disabled]="shift.employee.id === employee.id">
+                    {{ employee.name }}
+                  </option>
+                }
+              </select>
+            </label>
+
+            @if (formMessage(); as msg) {
+              <p>{{ msg }}</p>
+            }
+
+            <button type="submit" [disabled]="employeeForm.invalid || saving()">Update</button>
+            <button type="button" (click)="employeeDialog.close()">Cancel</button>
+          </form>
+        }
+      </dialog>
     </main>
   `,
 })
@@ -179,11 +211,25 @@ export class Schedule {
   protected readonly errorOpenFormMessage = signal<string | null>(null);
   protected readonly saving = signal<boolean>(false);
   protected readonly editingShift = signal<Shift | null>(null);
+  protected readonly editingEmployeeShift = signal<Shift | null>(null);
 
   protected readonly statusList: Shift['status'][] = ['SCHEDULED', 'CANCELED'];
   protected readonly today = toIsoDate(new Date());
   private readonly dayDialog = viewChild.required<ElementRef<HTMLDialogElement>>('dayDialog');
   private readonly formDialog = viewChild.required<ElementRef<HTMLDialogElement>>('formDialog');
+  private readonly employeeDialog =
+    viewChild.required<ElementRef<HTMLDialogElement>>('employeeDialog');
+  protected readonly shiftForm = this.formBuilder.group({
+    employeeId: ['', Validators.required],
+    storeId: ['', Validators.required],
+    shiftDate: ['', Validators.required],
+    startTime: ['', Validators.required],
+    endTime: ['', Validators.required],
+    status: ['SCHEDULED' as Shift['status']],
+  });
+  protected readonly employeeForm = this.formBuilder.group({
+    employeeId: ['', Validators.required],
+  });
 
   private readonly weekEnd = computed(() => addDays(this.weekStart(), 6));
   protected readonly days = computed(() => createWeekDays(this.weekStart(), this.shifts()));
@@ -201,6 +247,14 @@ export class Schedule {
     this.dayDialog().nativeElement.showModal();
   }
 
+  protected isMe(id: string): boolean {
+    return this.auth.employeeId() === id;
+  }
+
+  protected canCreateAndEditShift(): boolean {
+    return this.auth.canAll('SHIFT_WRITE', 'EMPLOYEE_READ_ANY', 'STORE_READ');
+  }
+
   protected openForm() {
     forkJoin([
       this.employeeApi.list({ status: 'ACTIVE', size: 200 }),
@@ -210,24 +264,43 @@ export class Schedule {
         this.employees.set(employees.content);
         this.stores.set(stores.content);
         const shift = this.editingShift();
+
         if (shift) {
-          this.shiftForm.setValue({
-            storeId: shift.store.id,
-            employeeId: shift.employee.id,
-            shiftDate: shift.shiftDate,
-            startTime: shift.startTime.slice(0, 5),
-            endTime: shift.endTime.slice(0, 5),
-            status: shift.status,
-          });
+          this.fillForm(shift);
           this.shiftForm.controls.employeeId.disable();
           this.shiftForm.controls.shiftDate.disable();
         }
+
         this.formDialog().nativeElement.showModal();
       },
       error: (err) => {
         this.errorOpenFormMessage.set('Error to open modal');
         console.error('An error occured', err);
       },
+    });
+  }
+
+  protected openEmployeeForm() {
+    this.employeeApi.list({ status: 'ACTIVE', size: 200 }).subscribe({
+      next: (employees) => {
+        this.employees.set(employees.content);
+        this.employeeDialog().nativeElement.showModal();
+      },
+      error: (err) => {
+        this.errorOpenFormMessage.set('Error to open modal');
+        console.error('An error occured', err);
+      },
+    });
+  }
+
+  protected fillForm(shift: Shift) {
+    this.shiftForm.setValue({
+      storeId: shift.store.id,
+      employeeId: shift.employee.id,
+      shiftDate: shift.shiftDate,
+      startTime: shift.startTime.slice(0, 5),
+      endTime: shift.endTime.slice(0, 5),
+      status: shift.status,
     });
   }
 
@@ -240,23 +313,6 @@ export class Schedule {
       })
       .subscribe((page) => this.shifts.set(page.content));
   }
-
-  protected isMe(id: string): boolean {
-    return this.auth.employeeId() === id;
-  }
-
-  protected canCreateAndEditShift(): boolean {
-    return this.auth.canAll('SHIFT_WRITE', 'EMPLOYEE_READ_ANY', 'STORE_READ');
-  }
-
-  protected readonly shiftForm = this.formBuilder.group({
-    employeeId: ['', Validators.required],
-    storeId: ['', Validators.required],
-    shiftDate: ['', Validators.required],
-    startTime: ['', Validators.required],
-    endTime: ['', Validators.required],
-    status: ['SCHEDULED' as Shift['status']],
-  });
 
   protected saveShift() {
     this.saving.set(true);
@@ -289,18 +345,52 @@ export class Schedule {
     });
   }
 
+  protected saveReassign() {
+    this.saving.set(true);
+    const editingEmployee = this.editingEmployeeShift();
+    const { employeeId } = this.employeeForm.getRawValue();
+    this.shiftApi.updateShiftEmployee(editingEmployee!.id, { employeeId }).subscribe({
+      next: () => {
+        this.loadShifts();
+        this.employeeDialog().nativeElement.close();
+        this.saving.set(false);
+      },
+      error: (err) => {
+        if (err.status === 409) {
+          this.formMessage.set('This employee already has a shift at this time');
+        } else {
+          this.formMessage.set('An unexpected error occurred');
+        }
+        this.saving.set(false);
+        console.error('Could not update employee: ', err);
+      },
+    });
+  }
+
   protected closeForm() {
     this.shiftForm.reset();
     this.formMessage.set(null);
     this.editingShift.set(null);
-    this.shiftForm.controls.employeeId.enable();
     this.shiftForm.controls.shiftDate.enable();
+    this.shiftForm.controls.employeeId.enable();
   }
 
-  protected editHandle(shift: Shift) {
+  protected closeEmployeeDialog() {
+    this.employeeForm.reset();
+    this.editingEmployeeShift.set(null);
+    this.formMessage.set(null);
+  }
+
+  protected editShiftHandle(shift: Shift) {
     this.editingShift.set(shift);
     this.dayDialog().nativeElement.close();
     this.openForm();
+  }
+
+  protected changeEmployeeHandle(shift: Shift) {
+    this.editingEmployeeShift.set(shift);
+    this.dayDialog().nativeElement.close();
+    this.openEmployeeForm();
   }
 
   constructor() {
